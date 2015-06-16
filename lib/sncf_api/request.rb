@@ -5,6 +5,7 @@ module SncfApi
 
     class << self
       def instance(api_token: ENV['SNCF_API_TOKEN'], plan: {name: 'Free', limits: { per_day: 3_000, per_month: 90_000 }})
+        api_token = nil if !api_token.is_a?(String) || api_token.strip == ''
         raise ArgumentError, "You MUST specify either api_token argument nor SNCF_API_TOKEN env variable" unless api_token
         @instances ||= {}
         @instances[api_token] ||= new
