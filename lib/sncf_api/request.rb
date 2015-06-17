@@ -10,11 +10,16 @@ module SncfApi
         @instances ||= {}
         @instances[api_token] ||= new(plan: plan[:limits])
       end
+
+      def drop_instance(api_token: ENV['SNCF_API_TOKEN'])
+        @instances.delete(api_token)
+        @instances.count
+      end
     end
 
     # My understanding of SNCF quota is that the countdown start at the very first call of a dau and the plan start on that instant
     def countdown
-      @countdow ||= default_countdown  
+      @countdown ||= default_countdown  
     end
 
   private
@@ -38,7 +43,7 @@ module SncfApi
       @countdown ||= default_countdown
       right_now = now
       QUOTA_PERIODS.each do |key, period|
-        if @countdown[:started_at] > (right_now - period)
+        if @countdown[:started_at] <= (right_now - period)
           @countdown[key] = @plan[key]
           @countdown[:started_at] = right_now
         end
