@@ -28,7 +28,7 @@ module SncfApi
     end
 
     def default_countdown
-      { per_day: @plan[:per_day], per_month: @plan[:per_month], started_at: now }
+      { per_day: @plan[:per_day], per_month: @plan[:per_month], per_month_started_at: now, per_day_started_at: now }
     end
 
     def now
@@ -43,9 +43,9 @@ module SncfApi
       @countdown ||= default_countdown
       right_now = now
       QUOTA_PERIODS.each do |key, period|
-        if @countdown[:started_at] <= (right_now - period)
+        if @countdown["#{key}_started_at".to_sym] <= (right_now - period)
           @countdown[key] = @plan[key]
-          @countdown[:started_at] = right_now
+          @countdown["#{key}_started_at".to_sym] = right_now
         end
       end
       QUOTA_PERIODS.keys.each { |k| @countdown[k] -= 1 }

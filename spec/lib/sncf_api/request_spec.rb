@@ -23,7 +23,7 @@ describe SncfApi::Request do
     context 'with a free account' do
 
       let!(:frozen_now) { Time.new(2009,5,16, 14).utc }
-      let!(:default_countdown) { { per_day: 3_000, per_month: 90_000, started_at: frozen_now } }
+      let!(:default_countdown) { { per_day: 3_000, per_month: 90_000, per_month_started_at: frozen_now, per_day_started_at: frozen_now } }
 
       before(:each) do
         allow_any_instance_of(Time).to receive_message_chain(:now, :utc).and_return(frozen_now)
@@ -61,7 +61,27 @@ describe SncfApi::Request do
 
         cd_after_a_request[:per_day] = default_countdown[:per_day] - 1
         cd_after_a_request[:per_month] -= 1
-        cd_after_a_request[:started_at] = the_day_after
+        cd_after_a_request[:per_day_started_at] = the_day_after
+        @request.send(:decrease_quotas)
+        expect(@request.countdown).to eq(cd_after_a_request)
+      end
+
+      it 'should reset month countdown AND day countdown after exceed the period time' do
+        before_request_count = 1_000
+        before_request_count.times { @request.send(:decrease_quotas) }
+        cd_after_a_request = default_countdown.dup
+        cd_after_a_request[:per_day] -= before_request_count
+        cd_after_a_request[:per_month] -= before_request_count
+        expect(@request.countdown).to eq(cd_after_a_request)
+
+        the_month_after = frozen_now + SncfApi::Request::QUOTA_PERIODS[:per_month]
+        allow_any_instance_of(Time).to receive_message_chain(:now, :utc).and_return(the_month_after)
+        allow_any_instance_of(SncfApi::Request).to receive(:now).and_return(the_month_after)
+
+        cd_after_a_request[:per_day]   = default_countdown[:per_day] - 1
+        cd_after_a_request[:per_month] = default_countdown[:per_month] - 1
+        cd_after_a_request[:per_day_started_at]   = the_month_after
+        cd_after_a_request[:per_month_started_at] = the_month_after
         @request.send(:decrease_quotas)
         expect(@request.countdown).to eq(cd_after_a_request)
       end
