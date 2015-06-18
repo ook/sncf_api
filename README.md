@@ -1,6 +1,10 @@
 # SncfApi
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/sncf_api`. To experiment with that code, run `bin/console` for an interactive prompt.
+Ruby gem to consume SNCF API (available from https://data.sncf.com/api)
+
+This API let you access SNCF routes, schedules, stop points, etc.
+
+Note: you have to request a user token from SNCF to use this API, so this gem (https://data.sncf.com/api/register)
 
 [![Build Status](https://travis-ci.org/ook/sncf_api.svg)](https://travis-ci.org/ook/sncf_api)
 
@@ -22,7 +26,7 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+You have to pass your token either via environment variable `ENV['SNCF_API_TOKEN']` or via constructor.
 
 ## Development
 
