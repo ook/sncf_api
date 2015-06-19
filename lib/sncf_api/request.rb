@@ -1,4 +1,5 @@
 require 'http'
+require 'oj'
 
 module SncfApi
   class Request
@@ -24,9 +25,16 @@ module SncfApi
       @countdown ||= default_countdown  
     end
 
+    KNOWN_HTTP_ERROR_CODES = [400, 401, 404, 500]
     def fetch(path)
       response = Http.basic_auth(:user => @api_token, :pass => nil).get(BASE_URL + path)
-      if [400, 401, 404].include?(response.code)
+      decrease_quotas
+      if response.code == 200
+        content = response.body.readpartial(HTTP::Connection::BUFFER_SIZE)
+        content = Oj.load(content) if response.content_type.mime_type == 'application/json'
+        return content
+      end
+      if KNOWN_HTTP_ERROR_CODES.include?(response.code)
         raise ArgumentError, "Unauthorized (#{response.code}) #{response.body}"
       end
     end
