@@ -28,9 +28,15 @@ module SncfApi
     KNOWN_HTTP_ERROR_CODES = [400, 401, 404, 500]
     def fetch(path)
       response = Http.basic_auth(:user => @api_token, :pass => nil).get(BASE_URL + path)
+      body = response.body
       decrease_quotas
       if response.code == 200
-        content = response.body.readpartial(HTTP::Connection::BUFFER_SIZE)
+        content = ''
+        loop do
+          chunk = body.readpartial(HTTP::Connection::BUFFER_SIZE) rescue nil
+          break if chunk.nil?
+          content << chunk
+        end
         content = Oj.load(content) if response.content_type.mime_type == 'application/json'
         return content
       end

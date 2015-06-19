@@ -104,7 +104,8 @@ describe SncfApi::Request do
       fixture_pathname = Pathname(__FILE__) + '..' + '..' + '..' + 'fixtures' + 'coverage.json'
       expected = Oj.load(fixture_pathname.read)
       reader, writer  = IO.pipe
-      writer << fixture_pathname.read
+      writer << fixture_pathname.read << "\n"
+      writer.close
       allow(Http).to receive_message_chain(:basic_auth, :get).and_return(Http::Response.new 200, nil, {'Content-Type' => 'application/json'}, reader)
       expect(@request.fetch('/coverage')).to eq(expected)
     end
