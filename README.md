@@ -12,8 +12,10 @@ Note: you have to request a user token from SNCF to use this API, so this gem (h
 
 Add this line to your application's Gemfile:
 
+Note: I haven't published the gem yet. For now point to this github account:
+
 ```ruby
-gem 'sncf_api'
+gem 'sncf_api', git: 'https://github.com/ook/sncf_api', branch: 'master'
 ```
 
 And then execute:
@@ -27,6 +29,20 @@ Or install it yourself as:
 ## Usage
 
 You have to pass your token either via environment variable `ENV['SNCF_API_TOKEN']` or via constructor.
+
+```ruby
+require 'sncf_api' # eventually
+
+# Take an instance linked to your API TOKEN. You can avoid passing api_token if ENV['SNCF_API_TOKEN'] is defined
+req = SncfApi::Request.instance(api_token: 'YOURTOKEN')
+=> #<SncfApi::Request:0x007f95ab1162a8 @api_token="YOURTOKEN", @countdown={:per_day=>2997, :per_month=>89997, :per_month_started_at=>2015-06-19 12:01:03 UTC, :per_day_started_at=>2015-06-19 12:01:03 UTC}, @plan={:per_day=>3000, :per_month=>90000}>
+
+# At this level, you can build raw requests like this:
+req.fetch('/coverage/sncf/stop_areas')
+=> { … } # giant Hash instance
+# Note that if the mime type is json, it's automatically loaded into Hash. Raw String will be returned if it's not the case.
+
+```
 
 ## Development
 
