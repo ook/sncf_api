@@ -87,4 +87,18 @@ describe SncfApi::Request do
       end
     end
   end
+
+  describe '#fetch' do
+    before(:each) do
+      @request = SncfApi::Request.instance(api_token: 'fakeToken')
+    end
+
+    [400,401,404].each do |code|
+      it "should raise error when HTTP status != 200 (#{code})" do
+        allow(Http).to receive_message_chain(:basic_auth, :get).and_return(Http::Response.new code, nil, nil,nil)
+        expect { @request.fetch('/coverage') }.to raise_error ArgumentError, /^Unauthorized \(#{code}\)/
+      end
+    end
+
+  end
 end

@@ -1,3 +1,5 @@
+require 'http'
+
 module SncfApi
   class Request
     IMPLEMENTATION = '20150615'
@@ -8,7 +10,7 @@ module SncfApi
         api_token = nil if !api_token.is_a?(String) || api_token.strip == ''
         raise ArgumentError, "You MUST specify either api_token argument nor SNCF_API_TOKEN env variable" unless api_token
         @instances ||= {}
-        @instances[api_token] ||= new(plan: plan[:limits])
+        @instances[api_token] ||= new(plan: plan[:limits], api_token: api_token)
       end
 
       def drop_instance(api_token: ENV['SNCF_API_TOKEN'])
@@ -22,9 +24,18 @@ module SncfApi
       @countdown ||= default_countdown  
     end
 
+    def fetch(path)
+      response = Http.basic_auth(:user => @api_token, :pass => nil).get(BASE_URL + path)
+      if [400, 401, 404].include?(response.code)
+        raise ArgumentError, "Unauthorized (#{response.code}) #{response.body}"
+      end
+    end
+
   private
-    def initialize(plan:)
+
+    def initialize(plan:, api_token:)
       @plan = plan
+      @api_token = api_token
     end
 
     def default_countdown
