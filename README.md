@@ -15,7 +15,7 @@ Add this line to your application's Gemfile:
 Note: I haven't published the gem yet. For now point to this github account:
 
 ```ruby
-gem 'sncf_api', git: 'https://github.com/ook/sncf_api', branch: 'master'
+gem 'sncf_api', git: 'https://github.com/ook/sncf_api.git', branch: 'master'
 ```
 
 And then execute:
