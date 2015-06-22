@@ -4,7 +4,7 @@ require 'oj'
 module SncfApi
   class Request
     IMPLEMENTATION = '20150615'
-    BASE_URL = 'https://api.sncf.com/v1'
+    attr_reader :api_token
 
     class << self
       def instance(api_token: ENV['SNCF_API_TOKEN'], plan: {name: 'Free', limits: { per_day: 3_000, per_month: 90_000 }})
@@ -25,24 +25,8 @@ module SncfApi
       @countdown ||= default_countdown  
     end
 
-    KNOWN_HTTP_ERROR_CODES = [400, 401, 404, 500]
     def fetch(path)
-      response = Http.basic_auth(:user => @api_token, :pass => nil).get(BASE_URL + path)
-      body = response.body
-      decrease_quotas
-      if response.code == 200
-        content = ''
-        loop do
-          chunk = body.readpartial(HTTP::Connection::BUFFER_SIZE) rescue nil
-          break if chunk.nil?
-          content << chunk
-        end
-        content = Oj.load(content) if response.content_type.mime_type == 'application/json'
-        return content
-      end
-      if KNOWN_HTTP_ERROR_CODES.include?(response.code)
-        raise ArgumentError, "Unauthorized (#{response.code}) #{response.body}"
-      end
+      SncfApi::Response.new(path: path, request: self)
     end
 
   private
