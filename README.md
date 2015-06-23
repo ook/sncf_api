@@ -39,10 +39,24 @@ req = SncfApi::Request.instance(api_token: 'YOURTOKEN')
 => #<SncfApi::Request:0x007f95ab1162a8 @api_token="YOURTOKEN", @countdown={:per_day=>2997, :per_month=>89997, :per_month_started_at=>2015-06-19 12:01:03 UTC, :per_day_started_at=>2015-06-19 12:01:03 UTC}, @plan={:per_day=>3000, :per_month=>90000}>
 
 # At this level, you can build raw requests like this:
-req.fetch('/coverage/sncf/stop_areas')
-=> { … } # giant Hash instance
-# Note that if the mime type is json, it's automatically loaded into Hash. Raw String will be returned if it's not the case.
+resp = req.fetch('/coverage/sncf/stop_areas')
+=> #<SncfApi::Response:0x008fe8456 … >
+resp.content
+=> { … } # Giant Hash containing the response
 
+```
+
+Note that the `content` is not the whole response, but only the current page. You can use #each_page and pass it a block that'll receive each page content as param:
+
+```ruby
+stop_point_count = 0
+resp.each_page { |page_content| stop_point_count += page_content['stop_points'].length }
+=> #<SncfApi::Response:0x008fe8456 … >
+stop_points.count
+=> 3809
+# Yes, there's an easier way to get the total_count on every page of the API, but that's just an example:
+req.pagination['total_result']
+=> 3809
 ```
 
 ## Development

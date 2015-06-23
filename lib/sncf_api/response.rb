@@ -49,6 +49,8 @@ module SncfApi
     end
 
     # Execute given block from the current page until last rel=next
+    # * block param is the block that will be yield with the page content
+    # * return self
     def each_page(&block)
       yield @content
       content = @content
@@ -68,6 +70,7 @@ module SncfApi
         content = Oj.load(content)
         yield content
       end
+      self
     end
 
   end
