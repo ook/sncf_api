@@ -38,6 +38,10 @@ require 'sncf_api' # eventually
 req = SncfApi::Request.instance(api_token: 'YOURTOKEN')
 => #<SncfApi::Request:0x007f95ab1162a8 @api_token="YOURTOKEN", @countdown={:per_day=>2997, :per_month=>89997, :per_month_started_at=>2015-06-19 12:01:03 UTC, :per_day_started_at=>2015-06-19 12:01:03 UTC}, @plan={:per_day=>3000, :per_month=>90000}>
 
+# Remember that calling #instance will always return the same instance for a given token, so instead of keeping a req reference, you can just call instance again:
+req.object_id == SncfApi::Request.instance(api_token: 'YOURTOKEN')
+=> true
+
 # At this level, you can build raw requests like this:
 resp = req.fetch('/coverage/sncf/stop_areas')
 => #<SncfApi::Response:0x008fe8456 … >
@@ -54,10 +58,18 @@ resp.each_page { |page_content| stop_point_count += page_content['stop_points'].
 => #<SncfApi::Response:0x008fe8456 … >
 stop_points.count
 => 3809
-# Yes, there's an easier way to get the total_count on every page of the API, but that's just an example:
+# Yes, there's an easier way to get the total_count on every page of the API, but that's
+# just an example:
 req.pagination['total_result']
 => 3809
+
+# Have a look to your plan consumption :
+req.countdown
+=> {:per_day=>2843, :per_month=>89843, :per_month_started_at=>2015-06-23 11:35:41 UTC, :per_day_started_at=>2015-06-23 11:35:41 UTC}
 ```
+
+Now you have all tools to explore SNCF API in your hands. In next iterations, I'll add some high-level wrappers for the different entities.
+For now, just read the API doc! https://data.sncf.com/api/documentation
 
 ## Development
 
