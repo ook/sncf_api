@@ -7,6 +7,7 @@ This API let you access SNCF routes, schedules, stop points, etc.
 Note: you have to request a user token from SNCF to use this API, so this gem (https://data.sncf.com/api/register)
 
 [![Build Status](https://travis-ci.org/ook/sncf_api.svg)](https://travis-ci.org/ook/sncf_api)
+[![Code Climate](https://codeclimate.com/github/ook/sncf_api/badges/gpa.svg)](https://codeclimate.com/github/ook/sncf_api)
 
 ## Installation
 
