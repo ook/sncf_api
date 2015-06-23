@@ -5,7 +5,8 @@ module SncfApi
   # There's helper methods like #each_page and #page(index) to help you to crawl easily in the 
   # result
   class Response
-    BASE_URL = 'https://api.sncf.com/v1'
+    HOST_URL = 'https://api.sncf.com'
+    BASE_PATH = '/v1'
 
     attr_reader :response, :request, :body, :content, :http_params
     attr_reader :pagination, :start_page
@@ -14,7 +15,7 @@ module SncfApi
     def initialize(path:, request:, http_params: nil)
       @path = path
       @http_params = http_params
-      @response = Http.basic_auth(:user => request.api_token, :pass => nil).get(BASE_URL + @path, params: @http_params)
+      @response = Http.basic_auth(:user => request.api_token, :pass => nil).get(HOST_URL + BASE_PATH + @path, params: @http_params)
       @body = response.body
       @request = request
       @request.send :decrease_quotas
@@ -57,18 +58,20 @@ module SncfApi
       loop do
         next_page = content && content['links'] && content['links'].find { |e| e['type'] == 'next' }
         break unless next_page
-        resp = Http.basic_auth(user: request.api_token, pass: nil).get(next_page['href'])
-        @request.send :decrease_quotas
-        break unless resp.code == 200 
-        break unless resp.content_type.mime_type == 'application/json'
-        content = ''
-        loop do
-          chunk = resp.body.readpartial(HTTP::Connection::BUFFER_SIZE) rescue nil
-          break if chunk.nil?
-          content << chunk
+        Http.basic_auth(user: request.api_token, pass: nil).persistent(HOST_URL) do |http|
+          resp = http.get(next_page['href'].sub(HOST_URL, ''))
+          @request.send :decrease_quotas
+          break unless resp.code == 200 
+          break unless resp.content_type.mime_type == 'application/json'
+          content = ''
+          loop do
+            chunk = resp.body.readpartial(HTTP::Connection::BUFFER_SIZE) rescue nil
+            break if chunk.nil?
+            content << chunk
+          end
+          content = Oj.load(content)
+          yield content
         end
-        content = Oj.load(content)
-        yield content
       end
       self
     end
